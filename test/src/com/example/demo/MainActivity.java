@@ -4,6 +4,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import com.example.demo.R;
+import com.unity3d.player.UnityPlayerActivity;
+import com.unity3d.player.UnityPlayerNativeActivity;
 
 import me.linkcube.library.LinkcubeBT;
 import me.linkcube.library.core.bluetooth.BTConst;
@@ -26,7 +28,7 @@ public class MainActivity extends Activity {
 	private TextView nameTextView;
 
 	private int toyState;
-	
+
 	private int btState;
 
 	private static Handler handler = new Handler();
@@ -44,7 +46,7 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				btState = BTManager.getInstance().getBTState();
-				Log.d(TAG, "BtState:"+btState);
+				Log.d(TAG, "BtState:" + btState);
 				if (btState == BTConst.BT_STATE.DISCOVER_ONE) {
 					bondAndConnectDevice();
 				}
