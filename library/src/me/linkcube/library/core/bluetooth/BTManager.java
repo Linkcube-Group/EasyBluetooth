@@ -12,6 +12,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.IntentFilter;
 import android.os.RemoteException;
+import android.util.Log;
 import me.linkcube.library.service.IToyServiceCall;
 
 public class BTManager implements OnBTStateListener {
@@ -97,6 +98,7 @@ public class BTManager implements OnBTStateListener {
 	}
 
 	private void bond() {
+		Log.d("BTManager", device.getName());
 		BTUtils.bondDevice(device);
 	}
 

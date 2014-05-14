@@ -7,9 +7,11 @@ import com.example.demo.R;
 
 import me.linkcube.library.LinkcubeBT;
 import me.linkcube.library.core.bluetooth.BTConst;
+import me.linkcube.library.core.bluetooth.BTManager;
 import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -24,6 +26,8 @@ public class MainActivity extends Activity {
 	private TextView nameTextView;
 
 	private int toyState;
+	
+	private int btState;
 
 	private static Handler handler = new Handler();
 
@@ -39,7 +43,9 @@ public class MainActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				if (toyState == BTConst.BT_STATE.DISCOVER_ONE) {
+				btState = BTManager.getInstance().getBTState();
+				Log.d(TAG, "BtState:"+btState);
+				if (btState == BTConst.BT_STATE.DISCOVER_ONE) {
 					bondAndConnectDevice();
 				}
 			}
