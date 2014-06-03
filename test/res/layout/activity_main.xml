@@ -16,9 +16,33 @@
         android:text="@string/hello_world" />
 
     <Button
-        android:id="@+id/connect"
+        android:id="@+id/discovery_device_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="connect" />
+        android:text="发现设备" />
+
+    <Button
+        android:id="@+id/bond_device_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="绑定设备" />
+
+    <Button
+        android:id="@+id/connect_device_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="连接设备" />
+
+    <Button
+        android:id="@+id/start_log"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="开始打印log" />
+
+    <Button
+        android:id="@+id/stop_log"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="停止打印log" />
 
 </LinearLayout>
