@@ -12,20 +12,17 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.IntentFilter;
 import android.os.RemoteException;
-import android.util.Log;
 import me.linkcube.library.service.IToyServiceCall;
 
-public class BTManager implements OnBTStateListener {
+public class BTManager {
 
 	public static IToyServiceCall toyServiceCall;
-
-	private String TAG = "BTManager";
 
 	private Timer timer;
 
 	private int BTstate;
 
-	private int toyState;
+	private int toyState = BTConst.TOY_STATE.BOND_NONE;
 
 	private BluetoothDevice device;
 
@@ -60,6 +57,10 @@ public class BTManager implements OnBTStateListener {
 		activity.unregisterReceiver(receiver);
 	}
 
+	public OnBTStateListener getBTStateListener() {
+		return listener;
+	}
+
 	/**
 	 * 返回蓝牙状态：0-蓝牙已打开；1-蓝牙已关闭；2-蓝牙正在打开中；3-蓝牙正在关闭中；4-正在扫描设备中
 	 * 
@@ -79,16 +80,6 @@ public class BTManager implements OnBTStateListener {
 	}
 
 	/**
-	 * 配对并连接玩具
-	 * 
-	 * @param name
-	 * @param address
-	 */
-	public void bondAndConnect() {
-		bond();
-	}
-
-	/**
 	 * 获取玩具名称
 	 * 
 	 * @return
@@ -97,12 +88,17 @@ public class BTManager implements OnBTStateListener {
 		return device.getName();
 	}
 
-	private void bond() {
-		Log.d("BTManager", device.getName());
+	/**
+	 * 配对玩具
+	 */
+	public void bond() {
 		BTUtils.bondDevice(device);
 	}
 
-	private void connect() {
+	/**
+	 * 连接玩具
+	 */
+	public void connect() {
 		ConnectToyThread thread = new ConnectToyThread();
 		new Thread(thread).start();
 	}
@@ -159,56 +155,58 @@ public class BTManager implements OnBTStateListener {
 		}
 	}
 
-	@Override
-	public void onDiscoveryOne(BluetoothDevice device) {
-		this.device = device;
-		BTstate = BTConst.BT_STATE.DISCOVER_ONE;
-		BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
-		adapter.cancelDiscovery();
-	}
+	private OnBTStateListener listener = new OnBTStateListener() {
 
-	@Override
-	public void onDiscoveryFinished() {
+		@Override
+		public void onDiscoveryOne(BluetoothDevice device) {
+			BTManager.this.device = device;
+			BTstate = BTConst.BT_STATE.DISCOVER_ONE;
+			BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+			adapter.cancelDiscovery();
+		}
 
-	}
+		@Override
+		public void onDiscoveryFinished() {
 
-	@Override
-	public void onStateTuringOn() {
-		BTstate = BTConst.BT_STATE.TURNING_ON;
-	}
+		}
 
-	@Override
-	public void onStateTuringOff() {
-		BTstate = BTConst.BT_STATE.TURNING_OFF;
+		@Override
+		public void onStateTuringOn() {
+			BTstate = BTConst.BT_STATE.TURNING_ON;
+		}
 
-	}
+		@Override
+		public void onStateTuringOff() {
+			BTstate = BTConst.BT_STATE.TURNING_OFF;
 
-	@Override
-	public void onStateOn() {
-		BTstate = BTConst.BT_STATE.ON;
-	}
+		}
 
-	@Override
-	public void onStateOff() {
-		BTstate = BTConst.BT_STATE.OFF;
+		@Override
+		public void onStateOn() {
+			BTstate = BTConst.BT_STATE.ON;
+		}
 
-	}
+		@Override
+		public void onStateOff() {
+			BTstate = BTConst.BT_STATE.OFF;
 
-	@Override
-	public void onStateBonded() {
-		toyState = BTConst.TOY_STATE.BONDED;
-		connect();
-		toyState = BTConst.TOY_STATE.CONNECTING;
-	}
+		}
 
-	@Override
-	public void onStateBondNone() {
-		toyState = BTConst.TOY_STATE.BOND_NONE;
-	}
+		@Override
+		public void onStateBonded() {
+			toyState = BTConst.TOY_STATE.BONDED;
+			toyState = BTConst.TOY_STATE.CONNECTING;
+		}
 
-	@Override
-	public void onStateBonding() {
-		toyState = BTConst.TOY_STATE.BONDING;
-	}
+		@Override
+		public void onStateBondNone() {
+			toyState = BTConst.TOY_STATE.BOND_NONE;
+		}
+
+		@Override
+		public void onStateBonding() {
+			toyState = BTConst.TOY_STATE.BONDING;
+		}
+	};
 
 }

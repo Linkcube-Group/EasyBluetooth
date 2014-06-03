@@ -48,7 +48,7 @@ public class MainActivity extends Activity {
 				btState = BTManager.getInstance().getBTState();
 				Log.d(TAG, "BtState:" + btState);
 				if (btState == BTConst.BT_STATE.DISCOVER_ONE) {
-					bondAndConnectDevice();
+					bond();
 				}
 			}
 		});
@@ -100,10 +100,32 @@ public class MainActivity extends Activity {
 		LinkcubeBT.onDestroy(this);
 	}
 
-	private void bondAndConnectDevice() {
-		LinkcubeBT.bondAndConnect();
+	/**
+	 * 绑定设备
+	 */
+	private void bond() {
+		LinkcubeBT.bond();
 	}
 
+	/**
+	 * 连接设备
+	 */
+	private void connect() {
+		LinkcubeBT.connect();
+	}
+
+	/**
+	 * 打开或者关闭蓝牙
+	 * 
+	 * @param enabled
+	 */
+	private void setBluetoothEnabled(boolean enabled) {
+		LinkcubeBT.setBluetoothEnable(enabled);
+	}
+
+	/**
+	 * 需要发现设备
+	 */
 	private void startDiscovery() {
 		LinkcubeBT.startDiscover();
 	}
