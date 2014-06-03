@@ -25,6 +25,7 @@ public class LinkcubeBT {
 		activity.bindService(toyintent, toyServiceConnection,
 				Context.BIND_AUTO_CREATE);
 		receiver = new BTReceiver(BTManager.getInstance().getBTStateListener());
+		BTManager.getInstance().initBTState();
 		Log.d(TAG, "onCreate");
 	}
 

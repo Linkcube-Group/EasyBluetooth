@@ -44,6 +44,11 @@ public class BTManager {
 
 	}
 
+	public void initBTState() {
+		BTstate = BTUtils.isBluetoothEnabled() ? BTConst.BT_STATE.ON
+				: BTConst.BT_STATE.OFF;
+	}
+
 	public void regiserReceiver(Activity activity, BTReceiver receiver) {
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(BluetoothDevice.ACTION_FOUND);
@@ -107,6 +112,7 @@ public class BTManager {
 
 		@Override
 		public void run() {
+			toyState = BTConst.TOY_STATE.CONNECTING;
 			boolean success;
 			try {
 				success = BTManager.toyServiceCall.connectToy(device.getName(),
@@ -195,7 +201,6 @@ public class BTManager {
 		@Override
 		public void onStateBonded() {
 			toyState = BTConst.TOY_STATE.BONDED;
-			toyState = BTConst.TOY_STATE.CONNECTING;
 		}
 
 		@Override
