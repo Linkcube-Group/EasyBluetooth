@@ -69,20 +69,24 @@ public class MainActivity extends Activity implements OnClickListener {
 					});
 
 				}
-				if (LinkcubeBT.getToyState() == BTConst.TOY_STATE.CONNECTED) {
 
-					handler.post(new Runnable() {
+				handler.post(new Runnable() {
 
-						@Override
-						public void run() {
+					@Override
+					public void run() {
+						if (LinkcubeBT.getToyState() == BTConst.TOY_STATE.BONDED) {
+							nameTextView.setText(LinkcubeBT.getToyName()
+									+ "->已绑定");
+						}
+						if (LinkcubeBT.getToyState() == BTConst.TOY_STATE.CONNECTED) {
 							nameTextView.setText(LinkcubeBT.getToyName()
 									+ "->已连接");
 							LinkcubeBT.setCommond();
 						}
-					});
-				}
-
+					}
+				});
 			}
+
 		}, 1000, 2000);
 
 	}
@@ -163,6 +167,19 @@ public class MainActivity extends Activity implements OnClickListener {
 		LinkcubeBT.connect();
 	}
 
+	private void getCommond() {
+		Thread thread = new Thread() {
+
+			@Override
+			public void run() {
+				String toyCommond = LinkcubeBT.getCommond();
+				// System.out.println("toyCommond:"+toyCommond);
+			}
+
+		};
+		thread.start();
+	}
+
 	/**
 	 * 打开或者关闭蓝牙
 	 * 
@@ -205,6 +222,7 @@ public class MainActivity extends Activity implements OnClickListener {
 						Log.i(TAG, "toyState:" + toyStateLog + "--正在连接玩具");
 					} else if (toyStateLog == BTConst.TOY_STATE.CONNECTED) {
 						Log.i(TAG, "toyState:" + toyStateLog + "--连接玩具成功");
+						getCommond();
 					}
 				}
 			}, 0, 2000);

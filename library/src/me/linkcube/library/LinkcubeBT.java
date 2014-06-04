@@ -104,4 +104,15 @@ public class LinkcubeBT {
 			e.printStackTrace();
 		}
 	}
+
+	public static String getCommond() {
+		try {
+			String toyCommond = BTManager.toyServiceCall.getCommand();
+			return toyCommond;
+		} catch (RemoteException e) {
+			e.printStackTrace();
+			return null;
+		}
+		
+	}
 }

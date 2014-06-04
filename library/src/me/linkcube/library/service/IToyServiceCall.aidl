@@ -28,5 +28,7 @@ interface IToyServiceCall {
 	boolean setShakeMode(int index, int val);	
 	
 	boolean checkConnection();
+	
+	String getCommand();
 }
 
