@@ -1,6 +1,7 @@
 package me.linkcube.library.service;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.Set;
@@ -13,6 +14,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.os.Build;
 import android.os.IBinder;
+import android.os.Message;
 import android.os.RemoteException;
 import android.util.Log;
 
@@ -196,6 +198,7 @@ public class ToyServiceCallImpl extends android.os.Binder implements
 		}
 		return Toy_Success;
 	}
+	
 
 	private int setLocalToySpeed(int speed) {
 		Log.d(TAG, "speed = " + speed);
@@ -383,5 +386,44 @@ public class ToyServiceCallImpl extends android.os.Binder implements
 			return true;
 		}
 		return false;
+	}
+
+	@Override
+	public String getCommand() throws RemoteException {
+			byte[] buffer = new byte[1024];
+			int bytes;
+			InputStream mmInStream = null;
+
+			try {
+				mmInStream = curSocket.getInputStream();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+			while (true) {
+				try {
+					// Read from the InputStream
+					if ((bytes = mmInStream.read(buffer)) > 0) {
+						byte[] buf_data = new byte[bytes];
+						for (int i = 0; i < bytes; i++) {
+							buf_data[i] = buffer[i];
+							System.out.print(buf_data[i]+" ");
+						}
+						System.out.println();
+						String s = new String(buf_data);
+						Message msg = new Message();
+						msg.obj = s;
+						msg.what = 1;
+						return s;
+					}
+				} catch (IOException e) {
+					try {
+						mmInStream.close();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+					break;
+				}
+			}
+			return null;
 	}
 }
