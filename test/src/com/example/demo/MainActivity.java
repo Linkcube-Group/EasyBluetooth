@@ -7,9 +7,9 @@ import com.example.demo.R;
 import com.unity3d.player.UnityPlayerActivity;
 import com.unity3d.player.UnityPlayerNativeActivity;
 
-import me.linkcube.library.LinkcubeBT;
 import me.linkcube.library.core.bluetooth.BTConst;
 import me.linkcube.library.core.bluetooth.BTManager;
+import me.linkcube.library.core.bluetooth.LinkcubeBT;
 import android.R.integer;
 import android.app.Activity;
 import android.os.Bundle;
@@ -62,9 +62,10 @@ public class MainActivity extends Activity implements OnClickListener {
 
 						@Override
 						public void run() {
-							nameTextView.setText("发现了一个设备："
-									+ LinkcubeBT.getToyName());
-
+							nameTextView.setText("发现设备-未绑定列表："
+									+ LinkcubeBT.getUnbondedToyNameList());
+							nameTextView.setText("发现设备-绑定列表："
+									+ LinkcubeBT.getUnbondedToyNameList());
 						}
 					});
 
@@ -75,8 +76,8 @@ public class MainActivity extends Activity implements OnClickListener {
 
 						@Override
 						public void run() {
-							nameTextView.setText(LinkcubeBT.getToyName()
-									+ "->已连接");
+							nameTextView.setText(LinkcubeBT
+									.getConnectedDevice() + "->已连接");
 							LinkcubeBT.setCommond();
 						}
 					});
@@ -122,11 +123,11 @@ public class MainActivity extends Activity implements OnClickListener {
 			break;
 
 		case R.id.bond_device_btn:
-			bond();
+			// bond();
 			break;
 
 		case R.id.connect_device_btn:
-			connect();
+			// connect();
 			break;
 
 		case R.id.start_log:
@@ -152,15 +153,15 @@ public class MainActivity extends Activity implements OnClickListener {
 	/**
 	 * 绑定设备
 	 */
-	private void bond() {
-		LinkcubeBT.bond();
+	private void bond(String address) {
+		LinkcubeBT.bond(address);
 	}
 
 	/**
 	 * 连接设备
 	 */
-	private void connect() {
-		LinkcubeBT.connect();
+	private void connect(String address) {
+		LinkcubeBT.connect(address);
 	}
 
 	/**
@@ -179,7 +180,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
 				@Override
 				public void run() {
-					int btStateLog = BTManager.getInstance().getBTState();
+					int btStateLog = LinkcubeBT.getBTState();
 					int toyStateLog = LinkcubeBT.getToyState();
 					if (btStateLog == BTConst.BT_STATE.ON) {
 						Log.d(TAG, "btState:" + btStateLog + "--蓝牙已打开");

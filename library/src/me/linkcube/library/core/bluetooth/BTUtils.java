@@ -87,12 +87,26 @@ public class BTUtils {
 	}
 
 	public static TOY_TYPE getDeviceType(String name) {
-		if (name.equals(DEVICE_DEFAULT_NAMES[0])) {
+		if (name.equalsIgnoreCase(DEVICE_DEFAULT_NAMES[0])) {
 			return TOY_TYPE.MARS;
-		} else {
+		} else if (name.equalsIgnoreCase(DEVICE_DEFAULT_NAMES[1])) {
 			return TOY_TYPE.VENUS;
+		} else {
+			return TOY_TYPE.LINKCUBE;
 		}
 	}
+
+	protected static String convertListToString(List<BluetoothDevice> list) {
+		String s = null;
+		for (int i = 0; i < list.size(); i++) {
+			BluetoothDevice device = list.get(i);
+			s = s + device.getName() + "@" + device.getAddress() + '|';
+		}
+		s = s.substring(0, s.length() - 1);
+		return s;
+	}
+	
+	
 
 	private BTUtils() {
 

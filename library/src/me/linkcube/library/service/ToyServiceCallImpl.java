@@ -7,7 +7,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import me.linkcube.library.core.bluetooth.BTUtils;
-import me.linkcube.library.core.bluetooth.BTManager;
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;

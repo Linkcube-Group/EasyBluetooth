@@ -4,11 +4,11 @@ import static android.bluetooth.BluetoothAdapter.ACTION_DISCOVERY_FINISHED;
 import static android.bluetooth.BluetoothAdapter.ACTION_STATE_CHANGED;
 import static android.bluetooth.BluetoothDevice.ACTION_BOND_STATE_CHANGED;
 
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import android.app.Activity;
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.IntentFilter;
 import android.os.RemoteException;
@@ -24,7 +24,11 @@ public class BTManager {
 
 	private int toyState = BTConst.TOY_STATE.BOND_NONE;
 
-	private BluetoothDevice device;
+	private List<BluetoothDevice> bondedDevices;
+
+	private List<BluetoothDevice> unbondedDevices;
+
+	private String currentDevice;
 
 	private static BTManager instance;
 
@@ -44,12 +48,12 @@ public class BTManager {
 
 	}
 
-	public void initBTState() {
+	protected void initBTState() {
 		BTstate = BTUtils.isBluetoothEnabled() ? BTConst.BT_STATE.ON
 				: BTConst.BT_STATE.OFF;
 	}
 
-	public void regiserReceiver(Activity activity, BTReceiver receiver) {
+	protected void regiserReceiver(Activity activity, BTReceiver receiver) {
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(BluetoothDevice.ACTION_FOUND);
 		filter.addAction(ACTION_BOND_STATE_CHANGED);
@@ -58,57 +62,53 @@ public class BTManager {
 		activity.registerReceiver(receiver, filter);
 	}
 
-	public void unregisterReceiver(Activity activity, BTReceiver receiver) {
+	protected void unregisterReceiver(Activity activity, BTReceiver receiver) {
 		activity.unregisterReceiver(receiver);
 	}
 
-	public OnBTStateListener getBTStateListener() {
+	protected OnBTStateListener getBTStateListener() {
 		return listener;
 	}
 
-	/**
-	 * 返回蓝牙状态：0-蓝牙已打开；1-蓝牙已关闭；2-蓝牙正在打开中；3-蓝牙正在关闭中；4-正在扫描设备中
-	 * 
-	 * @return
-	 */
-	public int getBTState() {
+	protected String getBondedToyNameList() {
+		bondedDevices = BTUtils.getBondedDevices();
+		return BTUtils.convertListToString(bondedDevices);
+	}
+
+	protected String getUnbondedToyNameList() {
+		return BTUtils.convertListToString(unbondedDevices);
+	}
+
+	protected int getBTState() {
 		return BTstate;
 	}
 
-	/**
-	 * 返回和玩具的连接状态：0-已配对；1-配对中；2-没有配对；3-已连接；4-连接失败
-	 * 
-	 * @return
-	 */
-	public int getToyState() {
+	protected int getToyState() {
 		return toyState;
 	}
 
-	/**
-	 * 获取玩具名称
-	 * 
-	 * @return
-	 */
-	public String getToyName() {
-		return device.getName();
-	}
-
-	/**
-	 * 配对玩具
-	 */
-	public void bond() {
+	protected void bond(String address) {
+		BluetoothDevice device = convertUnbondedAddressToDevice(address);
 		BTUtils.bondDevice(device);
 	}
 
-	/**
-	 * 连接玩具
-	 */
-	public void connect() {
-		ConnectToyThread thread = new ConnectToyThread();
+	protected void connect(String address) {
+		BluetoothDevice device = convertBondedAddressToDevice(address);
+		ConnectToyThread thread = new ConnectToyThread(device);
 		new Thread(thread).start();
 	}
 
+	protected String getConnectedDevice() {
+		return currentDevice;
+	}
+
 	private class ConnectToyThread implements Runnable {
+
+		private BluetoothDevice device;
+
+		public ConnectToyThread(BluetoothDevice device) {
+			this.device = device;
+		}
 
 		@Override
 		public void run() {
@@ -121,8 +121,14 @@ public class BTManager {
 				success = false;
 				e.printStackTrace();
 			}
-			toyState = success ? BTConst.TOY_STATE.CONNECTED
-					: BTConst.TOY_STATE.CONNECT_FAIL;
+			if (success) {
+				toyState = BTConst.TOY_STATE.CONNECTED;
+				currentDevice = device.getName() + "@" + device.getAddress();
+				;
+			} else {
+				toyState = BTConst.TOY_STATE.CONNECT_FAIL;
+				currentDevice = null;
+			}
 		}
 
 	}
@@ -149,12 +155,12 @@ public class BTManager {
 
 	}
 
-	public void startCheckConnetionTask() {
+	protected void startCheckConnetionTask() {
 		timer = new Timer();
 		timer.schedule(new CheckConnectionTask(), 3000, 3000);
 	}
 
-	private void cancelCheckConnectionTask() {
+	protected void cancelCheckConnectionTask() {
 		if (timer != null) {
 			timer.cancel();
 			timer = null;
@@ -165,15 +171,13 @@ public class BTManager {
 
 		@Override
 		public void onDiscoveryOne(BluetoothDevice device) {
-			BTManager.this.device = device;
+			filter(device);
 			BTstate = BTConst.BT_STATE.DISCOVER_ONE;
-			BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
-			adapter.cancelDiscovery();
 		}
 
 		@Override
 		public void onDiscoveryFinished() {
-
+			BTstate = BTConst.BT_STATE.DISCOVER_FINISHED;
 		}
 
 		@Override
@@ -213,5 +217,44 @@ public class BTManager {
 			toyState = BTConst.TOY_STATE.BONDING;
 		}
 	};
+
+	private boolean filter(BluetoothDevice device) {
+
+		for (int i = 0; i < bondedDevices.size(); i++) {
+			BluetoothDevice temp = bondedDevices.get(i);
+			if (temp.getAddress().equals(device.getAddress()))
+				return true;
+		}
+
+		for (int i = 0; i < unbondedDevices.size(); i++) {
+			BluetoothDevice temp = unbondedDevices.get(i);
+			if (temp.getAddress().equals(device.getAddress()))
+				return true;
+		}
+
+		unbondedDevices.add(device);
+		return false;
+
+	}
+
+	private BluetoothDevice convertBondedAddressToDevice(String address) {
+		for (int i = 0; i < bondedDevices.size(); i++) {
+			BluetoothDevice temp = bondedDevices.get(i);
+			if (temp.getAddress().equals(address))
+				return temp;
+		}
+		// XXX
+		return null;
+	}
+
+	private BluetoothDevice convertUnbondedAddressToDevice(String address) {
+		for (int i = 0; i < unbondedDevices.size(); i++) {
+			BluetoothDevice temp = unbondedDevices.get(i);
+			if (temp.getAddress().equals(address))
+				return temp;
+		}
+		// XXX
+		return null;
+	}
 
 }

@@ -2,11 +2,11 @@ package me.linkcube.library.core.bluetooth;
 
 public class BTConst {
 
-	public final static String[] DEVICE_DEFAULT_NAMES = { "Mars", "Venus",
+	protected final static String[] DEVICE_DEFAULT_NAMES = { "Mars", "Venus",
 			"linkcube" };
 
-	public enum TOY_TYPE {
-		MARS, VENUS
+	protected enum TOY_TYPE {
+		MARS, VENUS, LINKCUBE
 	}
 
 	public static class BT_STATE {
@@ -22,6 +22,8 @@ public class BTConst {
 		public static int DISCOVERING = 4;
 
 		public static int DISCOVER_ONE = 5;
+
+		public static int DISCOVER_FINISHED = 6;
 
 	}
 
