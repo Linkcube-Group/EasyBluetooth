@@ -55,7 +55,7 @@ public class LinkcubeBT {
 	/**
 	 * 开始扫描设备
 	 */
-	public static void startDiscover() {
+	public static void startDiscovery() {
 		Log.d(TAG, "startDiscovery");
 		BluetoothAdapter madapter = BluetoothAdapter.getDefaultAdapter();
 		madapter.startDiscovery();

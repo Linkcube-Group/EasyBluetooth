@@ -147,7 +147,7 @@ public class MainActivity extends Activity implements OnClickListener {
 	 * 发现设备
 	 */
 	private void startDiscovery() {
-		LinkcubeBT.startDiscover();
+		LinkcubeBT.startDiscovery();
 	}
 
 	/**
