@@ -143,6 +143,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
 					@Override
 					public void run() {
+						System.out.println("LinkcubeBT.getToyState():"+LinkcubeBT.getToyState());
 						switch (LinkcubeBT.getToyState()) {
 						case 0:
 							toyStateTv.setText("配对成功");
@@ -266,7 +267,10 @@ public class MainActivity extends Activity implements OnClickListener {
 			break;
 
 		case R.id.start_search_btn:
-
+			unbondedDevieNames.clear();
+			unbondedDeviceAdapter.notifyDataSetChanged();
+			findDeviceLv.invalidate();
+			isShowUnbonded = false;
 			startDiscovery();
 
 			break;
