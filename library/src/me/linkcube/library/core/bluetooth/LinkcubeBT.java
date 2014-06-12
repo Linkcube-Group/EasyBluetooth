@@ -57,7 +57,7 @@ public class LinkcubeBT {
 	 */
 	public static void startDiscovery() {
 		Log.d(TAG, "startDiscovery");
-		LinkcubeBT.startDiscovery();
+		BTManager.getInstance().startDiscovery();
 	}
 
 	/**
@@ -65,7 +65,7 @@ public class LinkcubeBT {
 	 */
 	public static void cancelDiscovery() {
 		Log.d(TAG, "cancelDiscovery");
-		LinkcubeBT.cancelDiscovery();
+		BTManager.getInstance().cancelDiscovery();
 	}
 
 	/**

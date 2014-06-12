@@ -1,5 +1,7 @@
 package com.example.demo;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -13,32 +15,41 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
 
 public class MainActivity extends Activity implements OnClickListener {
 
 	private String TAG = "MainActivity";
 
-	private Button discoveryDeviceBtn;
+	private Button openBluetoothBtn, closeBluetoothBtn, startSearchBtn,
+			stopSearchBtn, discoveryDeviceBtn, bondDeviceBtn, connectDeviceBtn,
+			startLogBtn, stopLogBtn;
 
-	private Button bondDeviceBtn;
+	private TextView currentStateTv,toyStateTv;
 
-	private Button connectDeviceBtn;
+	private ListView findDeviceLv, bondDeviceLv;
 
-	private Button startLogBtn;
+	private UnbondedDeviceAdapter unbondedDeviceAdapter;
 
-	private Button stopLogBtn;
+	private BondedDeviceAdapter bondedDeviceAdapter;
 
-	private TextView nameTextView;
+	private List<String> unbondedDevieNames, bondedDevieNames;
 
 	private int toyState;
 
 	private int btState = -1;
 
-	private static Handler handler = new Handler();
+	private static Handler bluetoothHandler = new Handler();
+	private static Handler toyHandler = new Handler();
 
 	private Timer logtTimer;
+
+	private boolean isShowUnbonded = false, isShowBonded = false,
+			refresh = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -53,43 +64,132 @@ public class MainActivity extends Activity implements OnClickListener {
 			@Override
 			public void run() {
 
-				if (LinkcubeBT.getBTState() == BTConst.BT_STATE.DISCOVER_ONE) {
-					handler.post(new Runnable() {
-
-						@Override
-						public void run() {
-							nameTextView.setText("发现设备-未绑定列表："
-									+ LinkcubeBT.getUnbondedToyNameList());
-							nameTextView.setText("发现设备-绑定列表："
-									+ LinkcubeBT.getUnbondedToyNameList());
-						}
-					});
-
-				}
-
-				handler.post(new Runnable() {
+				bluetoothHandler.post(new Runnable() {
 
 					@Override
 					public void run() {
-						if (LinkcubeBT.getToyState() == BTConst.TOY_STATE.BONDED) {
-							nameTextView.setText(LinkcubeBT
-									.getBondedToyNameList() + "->已绑定");
-						}
-						if (LinkcubeBT.getToyState() == BTConst.TOY_STATE.CONNECTED) {
-							nameTextView.setText(LinkcubeBT
-									.getConnectedDevice() + "->已连接");
-							LinkcubeBT.setCommond();
+						switch (LinkcubeBT.getBTState()) {
+						case 0:
+							currentStateTv.setText("蓝牙已打开");
+							if (!isShowBonded) {
+								String string = LinkcubeBT
+										.getBondedToyNameList();
+								if (string != null) {
+									System.out.println(string);
+									String[] strings = string.split("\\|");
+									for (int i = 0; i < strings.length; i++) {
+										bondedDevieNames.add(strings[i]);
+										System.out.println(strings[i]);
+									}
+									bondedDeviceAdapter.notifyDataSetChanged();
+									bondDeviceLv.invalidate();
+									isShowBonded = true;
+								}
+							}
+							break;
+						case 1:
+							currentStateTv.setText("蓝牙已关闭");
+							if (isShowBonded) {
+								bondedDevieNames.clear();
+								bondedDeviceAdapter.notifyDataSetChanged();
+								bondDeviceLv.invalidate();
+								isShowBonded = false;
+							}
+							if (isShowUnbonded) {
+								unbondedDevieNames.clear();
+								unbondedDeviceAdapter.notifyDataSetChanged();
+								findDeviceLv.invalidate();
+								isShowUnbonded = false;
+							}
+							break;
+						case 2:
+							currentStateTv.setText("蓝牙正在打开中");
+							break;
+						case 3:
+							currentStateTv.setText("蓝牙正在关闭中");
+							break;
+						case 4:
+							currentStateTv.setText("正在扫描设备中");
+							break;
+						case 5:
+							currentStateTv.setText("发现一个设备");
+							if (!isShowUnbonded) {
+								String string = LinkcubeBT
+										.getUnbondedToyNameList();
+								if (string != null) {
+									System.out.println(string);
+									String[] strings = string.split("\\|");
+									for (int i = 0; i < strings.length; i++) {
+										unbondedDevieNames.add(strings[i]);
+										System.out.println(strings[i]);
+									}
+									unbondedDeviceAdapter
+											.notifyDataSetChanged();
+									findDeviceLv.invalidate();
+									isShowUnbonded = true;
+								}
+							}
+							break;
+						case 6:
+							currentStateTv.setText("扫描设备过程结束");
+							break;
+						default:
+							break;
 						}
 					}
 				});
+
+				toyHandler.post(new Runnable() {
+
+					@Override
+					public void run() {
+						switch (LinkcubeBT.getToyState()) {
+						case 0:
+							toyStateTv.setText("配对成功");
+							if (!refresh) {
+								refresh();
+								refresh = true;
+							}
+							break;
+						case 1:
+							toyStateTv.setText("正在配对中");
+							break;
+						case 2:
+							//toyStateTv.setText("没有配对");
+							break;
+						case 3:
+							toyStateTv.setText("已连接");
+							break;
+						case 4:
+							toyStateTv.setText("连接失败");
+							break;
+						case 5:
+							toyStateTv.setText("连接失败");
+							break;
+
+						default:
+							break;
+						}
+					}
+				});
+
 			}
 
-		}, 1000, 2000);
+		}, 0, 500);
 
 	}
 
 	private void initView() {
-		nameTextView = (TextView) findViewById(R.id.name);
+		currentStateTv = (TextView) findViewById(R.id.bluetooth_state);
+		toyStateTv = (TextView) findViewById(R.id.toy_state);
+		openBluetoothBtn = (Button) findViewById(R.id.open_bluetooth_btn);
+		openBluetoothBtn.setOnClickListener(this);
+		closeBluetoothBtn = (Button) findViewById(R.id.close_bluetoth_btn);
+		closeBluetoothBtn.setOnClickListener(this);
+		startSearchBtn = (Button) findViewById(R.id.start_search_btn);
+		startSearchBtn.setOnClickListener(this);
+		stopSearchBtn = (Button) findViewById(R.id.stop_search_btn);
+		stopSearchBtn.setOnClickListener(this);
 		discoveryDeviceBtn = (Button) findViewById(R.id.discovery_device_btn);
 		discoveryDeviceBtn.setOnClickListener(this);
 		bondDeviceBtn = (Button) findViewById(R.id.bond_device_btn);
@@ -100,6 +200,43 @@ public class MainActivity extends Activity implements OnClickListener {
 		startLogBtn.setOnClickListener(this);
 		stopLogBtn = (Button) findViewById(R.id.stop_log);
 		stopLogBtn.setOnClickListener(this);
+		findDeviceLv = (ListView) findViewById(R.id.find_device_lv);
+		unbondedDevieNames = new ArrayList<String>();
+		unbondedDeviceAdapter = new UnbondedDeviceAdapter(this,
+				unbondedDevieNames);
+		findDeviceLv.setAdapter(unbondedDeviceAdapter);
+		findDeviceLv.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> arg0, View view, int arg2,
+					long arg3) {
+				TextView unbondDeviceNameTv = (TextView) view
+						.findViewById(R.id.device_name_tv);
+				String[] deviceNameAndAddress = unbondDeviceNameTv.getText()
+						.toString().split("@");
+				String deviceAddress = deviceNameAndAddress[1];
+				System.out.println("address:" + deviceAddress);
+				bond(deviceAddress);
+			}
+		});
+		bondDeviceLv = (ListView) findViewById(R.id.bond_device_lv);
+		bondedDevieNames = new ArrayList<String>();
+		bondedDeviceAdapter = new BondedDeviceAdapter(this, bondedDevieNames);
+		bondDeviceLv.setAdapter(bondedDeviceAdapter);
+		bondDeviceLv.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> arg0, View view, int arg2,
+					long arg3) {
+				TextView unbondDeviceNameTv = (TextView) view
+						.findViewById(R.id.device_name_tv);
+				String[] deviceNameAndAddress = unbondDeviceNameTv.getText()
+						.toString().split("@");
+				String deviceAddress = deviceNameAndAddress[1];
+				System.out.println("address:" + deviceAddress);
+				connect(deviceAddress);
+			}
+		});
 	}
 
 	@Override
@@ -117,6 +254,28 @@ public class MainActivity extends Activity implements OnClickListener {
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
+		case R.id.open_bluetooth_btn:
+
+			setBluetoothEnabled(true);
+
+			break;
+		case R.id.close_bluetoth_btn:
+
+			setBluetoothEnabled(false);
+
+			break;
+
+		case R.id.start_search_btn:
+
+			startDiscovery();
+
+			break;
+
+		case R.id.stop_search_btn:
+
+			cancelDiscovery();
+
+			break;
 
 		case R.id.discovery_device_btn:
 			startDiscovery();
@@ -144,10 +303,23 @@ public class MainActivity extends Activity implements OnClickListener {
 	}
 
 	/**
+	 * 打开或者关闭蓝牙
+	 * 
+	 * @param enabled
+	 */
+	private void setBluetoothEnabled(boolean enabled) {
+		LinkcubeBT.setBluetoothEnable(enabled);
+	}
+
+	/**
 	 * 发现设备
 	 */
 	private void startDiscovery() {
 		LinkcubeBT.startDiscovery();
+	}
+
+	private void cancelDiscovery() {
+		LinkcubeBT.cancelDiscovery();
 	}
 
 	/**
@@ -177,13 +349,36 @@ public class MainActivity extends Activity implements OnClickListener {
 		thread.start();
 	}
 
-	/**
-	 * 打开或者关闭蓝牙
-	 * 
-	 * @param enabled
-	 */
-	private void setBluetoothEnabled(boolean enabled) {
-		LinkcubeBT.setBluetoothEnable(enabled);
+	public void refresh() {
+		bondedDevieNames.clear();
+		unbondedDevieNames.clear();
+		
+		String string = LinkcubeBT
+				.getBondedToyNameList();
+		if (string != null) {
+			System.out.println(string);
+			String[] strings = string.split("\\|");
+			for (int i = 0; i < strings.length; i++) {
+				bondedDevieNames.add(strings[i]);
+				System.out.println(strings[i]);
+			}
+			bondedDeviceAdapter.notifyDataSetChanged();
+			bondDeviceLv.invalidate();
+		}
+		
+		String string2 = LinkcubeBT
+				.getUnbondedToyNameList();
+		if (string2 != null) {
+			System.out.println(string2);
+			String[] strings = string2.split("\\|");
+			for (int i = 0; i < strings.length; i++) {
+				unbondedDevieNames.add(strings[i]);
+				System.out.println(strings[i]);
+			}
+			unbondedDeviceAdapter
+					.notifyDataSetChanged();
+			findDeviceLv.invalidate();
+		}
 	}
 
 	private void startBtLog() {
@@ -231,7 +426,6 @@ public class MainActivity extends Activity implements OnClickListener {
 			logtTimer.cancel();
 			logtTimer = null;
 		}
-
 	}
 
 }

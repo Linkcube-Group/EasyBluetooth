@@ -97,12 +97,14 @@ public class BTUtils {
 	}
 
 	protected static String convertListToString(List<BluetoothDevice> list) {
-		String s = null;
+		String s = "";
 		for (int i = 0; i < list.size(); i++) {
 			BluetoothDevice device = list.get(i);
 			s = s + device.getName() + "@" + device.getAddress() + '|';
 		}
-		s = s.substring(0, s.length() - 1);
+		if(!s.equals("")){
+			s = s.substring(0, s.length() - 1);
+		}
 		return s;
 	}
 	

@@ -4,6 +4,7 @@ import static android.bluetooth.BluetoothAdapter.ACTION_DISCOVERY_FINISHED;
 import static android.bluetooth.BluetoothAdapter.ACTION_STATE_CHANGED;
 import static android.bluetooth.BluetoothDevice.ACTION_BOND_STATE_CHANGED;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -28,7 +29,7 @@ public class BTManager {
 
 	private List<BluetoothDevice> bondedDevices;
 
-	private List<BluetoothDevice> unbondedDevices;
+	private List<BluetoothDevice> unbondedDevices=new ArrayList<BluetoothDevice>();
 
 	private String currentDevice;
 
@@ -109,7 +110,9 @@ public class BTManager {
 
 	protected void bond(String address) {
 		BluetoothDevice device = convertUnbondedAddressToDevice(address);
-		BTUtils.bondDevice(device);
+		if(BTUtils.bondDevice(device)){
+			unbondedDevices.remove(device);
+		}
 	}
 
 	protected void connect(String address) {
