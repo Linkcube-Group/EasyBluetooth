@@ -57,8 +57,7 @@ public class LinkcubeBT {
 	 */
 	public static void startDiscovery() {
 		Log.d(TAG, "startDiscovery");
-		BluetoothAdapter madapter = BluetoothAdapter.getDefaultAdapter();
-		madapter.startDiscovery();
+		LinkcubeBT.startDiscovery();
 	}
 
 	/**
@@ -66,8 +65,7 @@ public class LinkcubeBT {
 	 */
 	public static void cancelDiscovery() {
 		Log.d(TAG, "cancelDiscovery");
-		BluetoothAdapter madapter = BluetoothAdapter.getDefaultAdapter();
-		madapter.cancelDiscovery();
+		LinkcubeBT.cancelDiscovery();
 	}
 
 	/**
@@ -150,6 +148,6 @@ public class LinkcubeBT {
 			e.printStackTrace();
 			return null;
 		}
-		
+
 	}
 }

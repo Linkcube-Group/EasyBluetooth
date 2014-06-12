@@ -9,9 +9,11 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.IntentFilter;
 import android.os.RemoteException;
+import android.util.Log;
 import me.linkcube.library.service.IToyServiceCall;
 
 public class BTManager {
@@ -68,6 +70,24 @@ public class BTManager {
 
 	protected OnBTStateListener getBTStateListener() {
 		return listener;
+	}
+
+	/**
+	 * 开始扫描设备
+	 */
+	protected void startDiscovery() {
+		BluetoothAdapter madapter = BluetoothAdapter.getDefaultAdapter();
+		madapter.startDiscovery();
+		BTstate = BTConst.BT_STATE.DISCOVERING;
+	}
+
+	/**
+	 * 取消扫描设备
+	 */
+	protected void cancelDiscovery() {
+		BluetoothAdapter madapter = BluetoothAdapter.getDefaultAdapter();
+		madapter.cancelDiscovery();
+		BTstate = BTConst.BT_STATE.DISCOVER_FINISHED;
 	}
 
 	protected String getBondedToyNameList() {
