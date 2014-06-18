@@ -29,7 +29,7 @@ public class MainActivity extends Activity implements OnClickListener {
 			stopSearchBtn, discoveryDeviceBtn, bondDeviceBtn, connectDeviceBtn,
 			startLogBtn, stopLogBtn;
 
-	private TextView currentStateTv,toyStateTv;
+	private TextView currentStateTv, toyStateTv, receiveDataTv;
 
 	private ListView findDeviceLv, bondDeviceLv;
 
@@ -143,7 +143,8 @@ public class MainActivity extends Activity implements OnClickListener {
 
 					@Override
 					public void run() {
-						System.out.println("LinkcubeBT.getToyState():"+LinkcubeBT.getToyState());
+						System.out.println("LinkcubeBT.getToyState():"
+								+ LinkcubeBT.getToyState());
 						switch (LinkcubeBT.getToyState()) {
 						case 0:
 							toyStateTv.setText("配对成功");
@@ -156,13 +157,14 @@ public class MainActivity extends Activity implements OnClickListener {
 							toyStateTv.setText("正在配对中");
 							break;
 						case 2:
-							//toyStateTv.setText("没有配对");
+							// toyStateTv.setText("没有配对");
 							break;
 						case 3:
 							toyStateTv.setText("已连接");
+							receiveDataTv.setText(LinkcubeBT.getData());
 							break;
 						case 4:
-							toyStateTv.setText("连接失败");
+							toyStateTv.setText("连接中");
 							break;
 						case 5:
 							toyStateTv.setText("连接失败");
@@ -183,6 +185,7 @@ public class MainActivity extends Activity implements OnClickListener {
 	private void initView() {
 		currentStateTv = (TextView) findViewById(R.id.bluetooth_state);
 		toyStateTv = (TextView) findViewById(R.id.toy_state);
+		receiveDataTv = (TextView) findViewById(R.id.receiveDataTv);
 		openBluetoothBtn = (Button) findViewById(R.id.open_bluetooth_btn);
 		openBluetoothBtn.setOnClickListener(this);
 		closeBluetoothBtn = (Button) findViewById(R.id.close_bluetoth_btn);
@@ -340,25 +343,11 @@ public class MainActivity extends Activity implements OnClickListener {
 		LinkcubeBT.connect(address);
 	}
 
-	private void getCommond() {
-		Thread thread = new Thread() {
-
-			@Override
-			public void run() {
-				String toyCommond = LinkcubeBT.getCommond();
-				// System.out.println("toyCommond:"+toyCommond);
-			}
-
-		};
-		thread.start();
-	}
-
 	public void refresh() {
 		bondedDevieNames.clear();
 		unbondedDevieNames.clear();
-		
-		String string = LinkcubeBT
-				.getBondedToyNameList();
+
+		String string = LinkcubeBT.getBondedToyNameList();
 		if (string != null) {
 			System.out.println(string);
 			String[] strings = string.split("\\|");
@@ -369,9 +358,8 @@ public class MainActivity extends Activity implements OnClickListener {
 			bondedDeviceAdapter.notifyDataSetChanged();
 			bondDeviceLv.invalidate();
 		}
-		
-		String string2 = LinkcubeBT
-				.getUnbondedToyNameList();
+
+		String string2 = LinkcubeBT.getUnbondedToyNameList();
 		if (string2 != null) {
 			System.out.println(string2);
 			String[] strings = string2.split("\\|");
@@ -379,8 +367,7 @@ public class MainActivity extends Activity implements OnClickListener {
 				unbondedDevieNames.add(strings[i]);
 				System.out.println(strings[i]);
 			}
-			unbondedDeviceAdapter
-					.notifyDataSetChanged();
+			unbondedDeviceAdapter.notifyDataSetChanged();
 			findDeviceLv.invalidate();
 		}
 	}
@@ -418,7 +405,6 @@ public class MainActivity extends Activity implements OnClickListener {
 						Log.i(TAG, "toyState:" + toyStateLog + "--正在连接玩具");
 					} else if (toyStateLog == BTConst.TOY_STATE.CONNECTED) {
 						Log.i(TAG, "toyState:" + toyStateLog + "--连接玩具成功");
-						getCommond();
 					}
 				}
 			}, 0, 2000);

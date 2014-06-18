@@ -124,12 +124,26 @@ public class LinkcubeBT {
 	}
 
 	/**
-	 * 返回和玩具的连接状态：0-已配对；1-配对中；2-没有配对；3-已连接；4-连接失败；5-连接失败；6-其他原因失去连接
+	 * 返回和玩具的连接状态：0-已配对；1-配对中；2-没有配对；3-已连接；4-连接中；5-连接失败；6-其他原因失去连接
 	 * 
 	 * @return
 	 */
 	public static int getToyState() {
 		return BTManager.getInstance().getToyState();
+	}
+
+	/**
+	 * 返回蓝牙设备发送的串口数据，数据格式为：数据帧_时间Tick|数据帧_时间Tick|……
+	 * 
+	 * @return data
+	 */
+	public static String getData() {
+		try {
+			return BTManager.getInstance().getData();
+		} catch (RemoteException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	public static void setCommond() {

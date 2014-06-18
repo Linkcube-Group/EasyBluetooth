@@ -51,12 +51,6 @@ public class ToyServiceCallImpl extends android.os.Binder implements
 
 	private int WaveThreshHold[] = { 0, 320, 510, 700, 890, 980, 1050, 1130 };// 0,700,
 																				// 890,
-																				// 980,
-																				// 1050,
-																				// 1130,
-																				// 1220,
-																				// 1450
-
 	private int KWaveToySpeed[] = { 2, 5, 10, 15, 20, 26, 30, 34 };
 
 	private int KWaveSpeed[][] = { { 2, 3, 7, 11, 15, 20, 22, 25 },
@@ -69,6 +63,10 @@ public class ToyServiceCallImpl extends android.os.Binder implements
 
 	private int shakeSensi = 2;
 	private int voiceSensi = 2;
+
+	private String dataBuffer = "";
+
+	private Thread thread = new Thread(new ReadDataThread());
 
 	@Override
 	public IBinder asBinder() {
@@ -137,6 +135,8 @@ public class ToyServiceCallImpl extends android.os.Binder implements
 			e.printStackTrace();
 			return false;
 		}
+
+		thread.start();
 		return true;
 	}
 
@@ -176,6 +176,80 @@ public class ToyServiceCallImpl extends android.os.Binder implements
 		return false;
 	}
 
+	@Override
+	public String getData() {
+		return dataBuffer;
+	}
+
+	public static String bytesToHexString(byte[] src) {
+		StringBuilder stringBuilder = new StringBuilder("");
+		if (src == null || src.length <= 0) {
+			return null;
+		}
+		for (int i = 0; i < src.length; i++) {
+			int v = src[i] & 0xFF;
+			String hv = Integer.toHexString(v);
+			if (hv.length() < 2) {
+				stringBuilder.append(0);
+			}
+			stringBuilder.append(hv);
+		}
+		return stringBuilder.toString();
+	}
+
+	@Override
+	public void clearDataBuffer() {
+		dataBuffer = "";
+	}
+
+	@Override
+	public void stopReadData() {
+		thread.interrupt();
+	}
+
+	// 读取数据
+	private class ReadDataThread implements Runnable {
+
+		public void run() {
+
+			byte[] buffer = new byte[1024];
+			int bytes;
+			InputStream mmInStream = null;
+			try {
+				mmInStream = curSocket.getInputStream();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+			while (true) {
+				try {
+					// Read from the InputStream
+					if ((bytes = mmInStream.read(buffer)) > 0) {
+						byte[] buf_data = new byte[bytes];
+						for (int i = 0; i < bytes; i++) {
+							buf_data[i] = buffer[i];
+						}
+						String data = bytesToHexString(buf_data);
+						if (dataBuffer.equals("")) {
+							dataBuffer = data + "_"
+									+ System.currentTimeMillis();
+						} else {
+							dataBuffer = dataBuffer + "|" + data + "_"
+									+ System.currentTimeMillis();
+						}
+						Log.d("data from byte to hex", dataBuffer);
+					}
+				} catch (IOException e) {
+					try {
+						mmInStream.close();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+					break;
+				}
+			}
+		}
+	}
+
 	private int sendCommand(byte[] data) {
 		OutputStream tmpOut = null;
 		try {
@@ -198,7 +272,6 @@ public class ToyServiceCallImpl extends android.os.Binder implements
 		}
 		return Toy_Success;
 	}
-	
 
 	private int setLocalToySpeed(int speed) {
 		Log.d(TAG, "speed = " + speed);
@@ -390,40 +463,40 @@ public class ToyServiceCallImpl extends android.os.Binder implements
 
 	@Override
 	public String getCommand() throws RemoteException {
-			byte[] buffer = new byte[1024];
-			int bytes;
-			InputStream mmInStream = null;
+		byte[] buffer = new byte[1024];
+		int bytes;
+		InputStream mmInStream = null;
 
+		try {
+			mmInStream = curSocket.getInputStream();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		while (true) {
 			try {
-				mmInStream = curSocket.getInputStream();
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
-			while (true) {
-				try {
-					// Read from the InputStream
-					if ((bytes = mmInStream.read(buffer)) > 0) {
-						byte[] buf_data = new byte[bytes];
-						for (int i = 0; i < bytes; i++) {
-							buf_data[i] = buffer[i];
-							System.out.print(buf_data[i]+" ");
-						}
-						System.out.println();
-						String s = new String(buf_data);
-						Message msg = new Message();
-						msg.obj = s;
-						msg.what = 1;
-						return s;
+				// Read from the InputStream
+				if ((bytes = mmInStream.read(buffer)) > 0) {
+					byte[] buf_data = new byte[bytes];
+					for (int i = 0; i < bytes; i++) {
+						buf_data[i] = buffer[i];
+						System.out.print(buf_data[i] + " ");
 					}
-				} catch (IOException e) {
-					try {
-						mmInStream.close();
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					}
-					break;
+					System.out.println();
+					String s = new String(buf_data);
+					Message msg = new Message();
+					msg.obj = s;
+					msg.what = 1;
+					return s;
 				}
+			} catch (IOException e) {
+				try {
+					mmInStream.close();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+				break;
 			}
-			return null;
+		}
+		return null;
 	}
 }

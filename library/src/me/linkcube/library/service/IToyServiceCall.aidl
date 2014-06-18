@@ -7,6 +7,12 @@ interface IToyServiceCall {
 	
 	boolean connectToy(String deviceName, String macAddress);
 	
+	String getData();
+	
+	void clearDataBuffer();
+	
+	void stopReadData();
+	
 	boolean disconnectToy(String deviceName, String macAddress);
 	
 	boolean closeToy();

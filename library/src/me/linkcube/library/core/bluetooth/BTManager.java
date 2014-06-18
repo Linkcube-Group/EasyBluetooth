@@ -4,6 +4,8 @@ import static android.bluetooth.BluetoothAdapter.ACTION_DISCOVERY_FINISHED;
 import static android.bluetooth.BluetoothAdapter.ACTION_STATE_CHANGED;
 import static android.bluetooth.BluetoothDevice.ACTION_BOND_STATE_CHANGED;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -13,6 +15,8 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.IntentFilter;
+import android.os.Handler;
+import android.os.Message;
 import android.os.RemoteException;
 import android.util.Log;
 import me.linkcube.library.service.IToyServiceCall;
@@ -29,7 +33,7 @@ public class BTManager {
 
 	private List<BluetoothDevice> bondedDevices;
 
-	private List<BluetoothDevice> unbondedDevices=new ArrayList<BluetoothDevice>();
+	private List<BluetoothDevice> unbondedDevices = new ArrayList<BluetoothDevice>();
 
 	private String currentDevice;
 
@@ -110,7 +114,7 @@ public class BTManager {
 
 	protected void bond(String address) {
 		BluetoothDevice device = convertUnbondedAddressToDevice(address);
-		if(BTUtils.bondDevice(device)){
+		if (BTUtils.bondDevice(device)) {
 			unbondedDevices.remove(device);
 		}
 	}
@@ -119,6 +123,12 @@ public class BTManager {
 		BluetoothDevice device = convertBondedAddressToDevice(address);
 		ConnectToyThread thread = new ConnectToyThread(device);
 		new Thread(thread).start();
+	}
+
+	protected String getData() throws RemoteException {
+		String data = BTManager.toyServiceCall.getData();
+		BTManager.toyServiceCall.clearDataBuffer();
+		return data;
 	}
 
 	protected String getConnectedDevice() {
