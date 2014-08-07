@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import com.ervinwang.bthelper.BTConst.TOY_TYPE;
+import com.ervinwang.bthelper.Config.TOY_TYPE;
 import com.ervinwang.bthelper.core.DeviceBroadcastReceiver;
 
 import android.app.Activity;
@@ -17,11 +17,11 @@ import android.util.Log;
 import static android.bluetooth.BluetoothAdapter.ACTION_DISCOVERY_FINISHED;
 import static android.bluetooth.BluetoothAdapter.ACTION_STATE_CHANGED;
 import static android.bluetooth.BluetoothDevice.ACTION_BOND_STATE_CHANGED;
-import static com.ervinwang.bthelper.BTConst.DEVICE_DEFAULT_NAMES;
+import static com.ervinwang.bthelper.Config.DEVICE_DEFAULT_NAMES;
 
 public class BTHelper {
 
-	private static String TAG = "BThelper";
+	private static String TAG = "BTHelper";
 
 	/**
 	 * 向给定Activity注册寻找蓝牙设备接收器
@@ -95,30 +95,6 @@ public class BTHelper {
 			}
 		}
 		return devlist;
-	}
-
-	public static boolean bondDevice(BluetoothDevice dev) {
-		Method createBondMethod;
-		Log.d(TAG, "createBondMethod--bondDevice");
-		try {
-			createBondMethod = dev.getClass().getMethod("createBond");
-			try {
-				createBondMethod.invoke(dev);
-			} catch (IllegalArgumentException e) {
-				e.printStackTrace();
-				return false;
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-				return false;
-			} catch (InvocationTargetException e) {
-				e.printStackTrace();
-				return false;
-			}
-		} catch (NoSuchMethodException e) {
-			e.printStackTrace();
-			return false;
-		}
-		return true;
 	}
 
 	public static boolean isLinkCubeDevice(BluetoothDevice device) {

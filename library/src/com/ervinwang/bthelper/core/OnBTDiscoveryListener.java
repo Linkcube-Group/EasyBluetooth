@@ -8,51 +8,51 @@ import android.bluetooth.BluetoothDevice;
  * @author Ervin
  * 
  */
-public interface OnDeviceDiscoveryListener {
+public interface OnBTDiscoveryListener {
 
 	/**
 	 * 发现一个设备的回调接口
 	 */
-	void onDeviceDiscoveryOne(BluetoothDevice device);
+	void onBTDiscoveryOne(BluetoothDevice device);
 
 	/**
 	 * 查找蓝牙设备完毕的回调接口
 	 */
-	void onDeviceDiscoveryFinished();
+	void onBTDiscoveryFinished();
 
 	/**
 	 * 蓝牙正在打开
 	 */
-	void onDeviceStateTuringOn();
+	void onBTStateTuringOn();
 
 	/**
 	 * 蓝牙正在关闭
 	 */
-	void onDeviceStateTuringOff();
+	void onBTStateTuringOff();
 
 	/**
 	 * 蓝牙已经打开
 	 */
-	void onDeviceStateOn();
+	void onBTStateOn();
 
 	/**
 	 * 蓝牙已经关闭
 	 */
-	void onDeviceStateOff();
+	void onBTStateOff();
 
 	/**
 	 * 绑定设备成功
 	 */
-	void onDeviceStateBonded();
+	void onBTStateBonded();
 
 	/**
 	 * 没有绑定设备
 	 */
-	void onDeviceStateBondNone();
+	void onBTStateBondNone();
 
 	/**
 	 * 正在绑定蓝牙设备
 	 */
-	void onDeviceStateBonding();
+	void onBTStateBonding();
 
 }

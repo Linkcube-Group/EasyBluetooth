@@ -3,15 +3,16 @@ package com.ervinwang.bthelper;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import android.bluetooth.BluetoothDevice;
+
+import com.ervinwang.bthelper.core.IReceiveData;
 import com.ervinwang.bthelper.core.service.DeviceService;
 
 public class BTManager {
 
-	public DeviceService toyService;
+	public DeviceService deviceService;
 
 	private Timer timer;
-
-	private String currentDevice;
 
 	private static BTManager instance;
 
@@ -30,28 +31,41 @@ public class BTManager {
 	}
 
 	private BTManager() {
-		toyService = new DeviceService();
+		deviceService = new DeviceService();
 	}
 
 	public DeviceService getDeviceService() {
-		return toyService;
+		return deviceService;
 	}
 
 	public int getDeviceState() {
 		return toyState;
 	}
 
-	public String getDeviceConnected() {
-		return currentDevice;
+	public boolean bondDevice(BluetoothDevice dev) {
+		return deviceService.bondDevice(dev);
 	}
 
+	public BluetoothDevice getDeviceConnected() {
+		return null;
+	}
+
+	public void startReceiveData(IReceiveData receiveData) {
+		deviceService.startReceiveData(receiveData);
+	}
+
+	public void stopReceiveData() {
+		deviceService.stopReceiveData();
+	}
+
+	// //////////////////////////////////////////////////
 	public class CheckConnectionTask extends TimerTask {
 
 		@Override
 		public void run() {
 
 			if (toyState == Const.DEVICE_STATE.CONNECTED) {
-				if (!toyService.checkConnection()) {
+				if (!deviceService.checkConnection()) {
 					toyState = Const.DEVICE_STATE.INTERRUPTED;
 					cancelCheckConnectionTask();
 				}

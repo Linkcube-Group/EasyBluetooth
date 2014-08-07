@@ -1,18 +1,24 @@
 package com.ervinwang.bthelper.core.service;
 
+import android.bluetooth.BluetoothDevice;
+
 import com.ervinwang.bthelper.core.IReceiveData;
 
 interface IDeviceService {
 
-	boolean connectToy(String deviceName, String macAddress);
+	boolean bondDevice(BluetoothDevice device);
 
-	boolean disconnectToy(String deviceName, String macAddress);
+	boolean connectDevice(String deviceName, String macAddress);
+
+	boolean disconnectDevice(String deviceName, String macAddress);
+
+	BluetoothDevice getBluetoothDevice();
 
 	boolean checkConnection();
 
-	void startReadData(IReceiveData receiveData);
+	void startReceiveData(IReceiveData receiveData);
 
 	void clearDataBuffer();
 
-	void stopReadData();
+	void stopReceiveData();
 }

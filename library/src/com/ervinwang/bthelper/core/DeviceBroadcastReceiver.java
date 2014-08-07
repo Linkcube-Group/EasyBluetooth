@@ -15,9 +15,9 @@ public class DeviceBroadcastReceiver extends BroadcastReceiver {
 
 	private String TAG = "BTDeviceReceiver";
 
-	private OnDeviceDiscoveryListener mListener;
+	private OnBTDiscoveryListener mListener;
 
-	public DeviceBroadcastReceiver(OnDeviceDiscoveryListener listener) {
+	public DeviceBroadcastReceiver(OnBTDiscoveryListener listener) {
 		mListener = listener;
 	}
 
@@ -36,14 +36,14 @@ public class DeviceBroadcastReceiver extends BroadcastReceiver {
 				if (device.getBondState() != BluetoothDevice.BOND_BONDED) {
 					Log.d(TAG,
 							"onReceive:discover a linkcube device and the device is not bonded");
-					mListener.onDeviceDiscoveryOne(device);
+					mListener.onBTDiscoveryOne(device);
 				}
 			}
 
 		}
 		if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
 			Log.d(TAG, "onReceive:finish discovery");
-			mListener.onDeviceDiscoveryFinished();
+			mListener.onBTDiscoveryFinished();
 		}
 		if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
 			Log.d(TAG, "onReceive:bluetooth bond state changed");
@@ -53,13 +53,13 @@ public class DeviceBroadcastReceiver extends BroadcastReceiver {
 				int connectState = device.getBondState();
 				switch (connectState) {
 				case BluetoothDevice.BOND_NONE:
-					mListener.onDeviceStateBondNone();
+					mListener.onBTStateBondNone();
 					break;
 				case BluetoothDevice.BOND_BONDING:
-					mListener.onDeviceStateBonding();
+					mListener.onBTStateBonding();
 					break;
 				case BluetoothDevice.BOND_BONDED:
-					mListener.onDeviceStateBonded();
+					mListener.onBTStateBonded();
 					break;
 				}
 			}
@@ -69,16 +69,16 @@ public class DeviceBroadcastReceiver extends BroadcastReceiver {
 			Log.d(TAG, "Extra_state " + state);
 			switch (state) {
 			case BluetoothAdapter.STATE_TURNING_ON:
-				mListener.onDeviceStateTuringOn();
+				mListener.onBTStateTuringOn();
 				break;
 			case BluetoothAdapter.STATE_ON:
-				mListener.onDeviceStateOn();
+				mListener.onBTStateOn();
 				break;
 			case BluetoothAdapter.STATE_TURNING_OFF:
-				mListener.onDeviceStateTuringOff();
+				mListener.onBTStateTuringOff();
 				break;
 			case BluetoothAdapter.STATE_OFF:
-				mListener.onDeviceStateOff();
+				mListener.onBTStateOff();
 				break;
 			default:
 				break;
