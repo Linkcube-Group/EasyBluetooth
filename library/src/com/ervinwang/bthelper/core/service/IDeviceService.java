@@ -18,7 +18,5 @@ interface IDeviceService {
 
 	void startReceiveData(IReceiveData receiveData);
 
-	void clearDataBuffer();
-
 	void stopReceiveData();
 }

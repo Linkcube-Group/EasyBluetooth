@@ -31,8 +31,6 @@ public class DeviceService implements IDeviceService {
 
 	private byte[] checkData = { 0x35, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x35 };
 
-	private String dataBuffer = "";
-
 	private Thread mReadThread;
 
 	private int deviceState;
@@ -119,7 +117,8 @@ public class DeviceService implements IDeviceService {
 			e.printStackTrace();
 			return false;
 		}
-		DeviceConnectionManager.getInstance().setmIsConnected(true, currentDevice);
+		DeviceConnectionManager.getInstance().setmIsConnected(true,
+				currentDevice);
 		deviceState = CONNECTED;
 		return true;
 	}
@@ -170,7 +169,8 @@ public class DeviceService implements IDeviceService {
 		} catch (IOException e2) {
 			return false;
 		}
-		DeviceConnectionManager.getInstance().setmIsConnected(false, currentDevice);
+		DeviceConnectionManager.getInstance().setmIsConnected(false,
+				currentDevice);
 		return true;
 	}
 
@@ -198,20 +198,7 @@ public class DeviceService implements IDeviceService {
 			while (true) {
 				try {
 					if ((bytes = mmInStream.read(buffer)) > 0) {
-						byte[] buf_data = new byte[bytes];
-						for (int i = 0; i < bytes; i++) {
-							buf_data[i] = buffer[i];
-						}
-						mReceiveData.receiveData(buf_data);
-						String data = bytesToHexString(buf_data);
-						if (dataBuffer.equals("")) {
-							dataBuffer = data + "_"
-									+ System.currentTimeMillis();
-						} else {
-							dataBuffer = dataBuffer + "|" + data + "_"
-									+ System.currentTimeMillis();
-						}
-						Log.d("data from byte to hex", dataBuffer);
+						mReceiveData.receiveData(bytes, buffer);
 					}
 				} catch (IOException e) {
 					try {
@@ -265,30 +252,9 @@ public class DeviceService implements IDeviceService {
 	}
 
 	@Override
-	public void clearDataBuffer() {
-		dataBuffer = "";
-	}
-
-	@Override
 	public void stopReceiveData() {
 		mReadThread.interrupt();
 		mReadThread = null;
-	}
-
-	public static String bytesToHexString(byte[] src) {
-		StringBuilder stringBuilder = new StringBuilder("");
-		if (src == null || src.length <= 0) {
-			return null;
-		}
-		for (int i = 0; i < src.length; i++) {
-			int v = src[i] & 0xFF;
-			String hv = Integer.toHexString(v);
-			if (hv.length() < 2) {
-				stringBuilder.append(0);
-			}
-			stringBuilder.append(hv);
-		}
-		return stringBuilder.toString();
 	}
 
 	@Override

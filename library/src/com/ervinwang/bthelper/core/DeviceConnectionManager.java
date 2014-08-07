@@ -73,8 +73,10 @@ public class DeviceConnectionManager {
 	}
 
 	public void stopTimerTask() {
-		callback.interrupted();
-		cancelCheckConnectionTask();
+		if (callback != null) {
+			callback.interrupted();
+			cancelCheckConnectionTask();
+		}
 	}
 
 	public void setmIsConnected(boolean mIsConnected, BluetoothDevice device) {
