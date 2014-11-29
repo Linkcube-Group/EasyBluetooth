@@ -29,7 +29,6 @@ import static android.bluetooth.BluetoothDevice.ACTION_FOUND;
 import static android.bluetooth.BluetoothDevice.BOND_BONDED;
 import static android.bluetooth.BluetoothDevice.BOND_BONDING;
 import static android.bluetooth.BluetoothDevice.BOND_NONE;
-import static cn.ervin.bluetooth.EasyBluetoothConst.ConnectMessage.MESSAGE_DEVICE_NAME;
 import static cn.ervin.bluetooth.EasyBluetoothConst.ConnectMessage.MESSAGE_READ;
 import static cn.ervin.bluetooth.EasyBluetoothConst.ConnectMessage.MESSAGE_STATE_CHANGE;
 import static cn.ervin.bluetooth.EasyBluetoothConst.ConnectMessage.MESSAGE_TOAST;
@@ -67,11 +66,11 @@ public class EasyBluetooth {
      */
     private int autoDevicesCount = 0;
 
-    private OnBluetoothConnectionListener bcl;
+    private OnDeviceConnectListener bcl;
 
-    private OnBluetoothConnectionListener onBluetoothConnectionListener;
+    private OnDeviceConnectListener onDeviceConnectListener;
 
-    private OnAutoConnectionListener onAutoConnectionListener;
+    private OnAutoConnectListener onAutoConnectListener;
 
     private OnDataReceivedListener onDataReceivedListener;
 
@@ -90,12 +89,12 @@ public class EasyBluetooth {
 
     public void onStart(Activity activity) {
         registerReceiver(activity);
-
         if (service == null)
-            service = new EasyBluetoothService(activity, mHandler);
+            service = new EasyBluetoothService(mHandler);
     }
 
     public void onPause(Activity activity) {
+        cancelDiscovery();
         unregisterReceiver(activity);
     }
 
@@ -155,14 +154,16 @@ public class EasyBluetooth {
         BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
         Set<BluetoothDevice> pairedDevices = adapter.getBondedDevices();
         List<BluetoothDevice> devices = new ArrayList<BluetoothDevice>();
-        if (!EasyBluetoothConfig.FILTER_DEVICES)
-            for (BluetoothDevice device : pairedDevices) {
-                if (EasyBluetoothUtils.isTargetDevice(device)) {
-                    devices.add(device);
-                    break;
-                }
+        for (BluetoothDevice device : pairedDevices) {
+            if (EasyBluetoothConfig.FILTER_DEVICES && EasyBluetoothUtils.isTargetDevice(device)) {
+                devices.add(device);
+                break;
+            } else if (!EasyBluetoothConfig.FILTER_DEVICES) {
+                devices.add(device);
             }
+        }
         return devices;
+
     }
 
     public boolean createBond(BluetoothDevice btDevice) {
@@ -285,6 +286,18 @@ public class EasyBluetooth {
         service.connect(device);
     }
 
+    public boolean isConnected() {
+        int state = service.getState();
+        if (state == EasyBluetoothConst.ConnectState.STATE_CONNECTED)
+            return true;
+        else
+            return false;
+    }
+
+    public BluetoothDevice getConnectedDevice() {
+        return service.getConnectedDevice();
+    }
+
     public void disconnect() {
         if (service != null) {
             isServiceRunning = false;
@@ -301,8 +314,8 @@ public class EasyBluetooth {
             keyword = keywordName;
             isAutoConnectionEnabled = true;
             isAutoConnecting = true;
-            if (onAutoConnectionListener != null)
-                onAutoConnectionListener.onAutoConnectionStarted();
+            if (onAutoConnectListener != null)
+                onAutoConnectListener.onAutoConnectStart();
             final ArrayList<String> arr_filter_address = new ArrayList<String>();
             final ArrayList<String> arr_filter_name = new ArrayList<String>();
             String[] arr_name = getPairedDeviceName();
@@ -314,8 +327,8 @@ public class EasyBluetooth {
                 }
             }
 
-            bcl = new OnBluetoothConnectionListener() {
-                public void onDeviceConnected(String name, String address) {
+            bcl = new OnDeviceConnectListener() {
+                public void onDeviceConnected() {
                     bcl = null;
                     isAutoConnecting = false;
                 }
@@ -323,7 +336,7 @@ public class EasyBluetooth {
                 public void onDeviceDisconnected() {
                 }
 
-                public void onDeviceConnectionFailed() {
+                public void onDeviceConnectFailed() {
                     Log.e("CHeck", "Failed");
                     if (isServiceRunning) {
                         if (isAutoConnectionEnabled) {
@@ -332,8 +345,8 @@ public class EasyBluetooth {
                                 autoDevicesCount = 0;
                             connect(arr_filter_address.get(autoDevicesCount));
                             Log.e("CHeck", "Connect");
-                            if (onAutoConnectionListener != null)
-                                onAutoConnectionListener.onNewConnection(arr_filter_name.get(autoDevicesCount)
+                            if (onAutoConnectListener != null)
+                                onAutoConnectListener.onNewConnected(arr_filter_name.get(autoDevicesCount)
                                         , arr_filter_address.get(autoDevicesCount));
                         } else {
                             bcl = null;
@@ -343,10 +356,10 @@ public class EasyBluetooth {
                 }
             };
 
-            setOnBluetoothConnectionListener(bcl);
+            setOnDeviceConnectListener(bcl);
             autoDevicesCount = 0;
-            if (onAutoConnectionListener != null)
-                onAutoConnectionListener.onNewConnection(arr_name[autoDevicesCount], arr_address[autoDevicesCount]);
+            if (onAutoConnectListener != null)
+                onAutoConnectListener.onNewConnected(arr_name[autoDevicesCount], arr_address[autoDevicesCount]);
             if (arr_filter_address.size() > 0)
                 connect(arr_filter_address.get(autoDevicesCount));
             else
@@ -384,37 +397,42 @@ public class EasyBluetooth {
                             onDataReceivedListener.onDataReceived(readBuf, readMessage);
                     }
                     break;
-                case MESSAGE_DEVICE_NAME:
-                    String mDeviceName = msg.getData().getString(EasyBluetoothConst.DEVICE_NAME);
-                    String mDeviceAddress = msg.getData().getString(EasyBluetoothConst.DEVICE_ADDRESS);
-                    if (onBluetoothConnectionListener != null)
-                        onBluetoothConnectionListener.onDeviceConnected(mDeviceName, mDeviceAddress);
-                    isConnected = true;
-                    break;
+//                case MESSAGE_DEVICE_NAME:
+//                    if (onDeviceConnectListener != null)
+//                        onDeviceConnectListener.onDeviceConnected();
+//                    isConnected = true;
+//                    break;
                 case MESSAGE_TOAST:
                     break;
                 case MESSAGE_STATE_CHANGE:
                     if (isConnected && msg.arg1 != STATE_CONNECTED) {
-                        if (onBluetoothConnectionListener != null)
-                            onBluetoothConnectionListener.onDeviceDisconnected();
+                        if (onDeviceConnectListener != null)
+                            onDeviceConnectListener.onDeviceDisconnected();
                         if (isAutoConnectionEnabled) {
                             isAutoConnectionEnabled = false;
                             autoConnect(keyword);
                         }
                         isConnected = false;
-                        mDeviceName = null;
-                        mDeviceAddress = null;
                     }
 
                     if (!isConnecting && msg.arg1 == STATE_CONNECTING) {
                         isConnecting = true;
+                        isConnected = false;
+                    } else if (isConnecting && msg.arg1 == STATE_CONNECTED) {
+                        isConnected = true;
+                        isConnecting = false;
+                        if (onDeviceConnectListener != null)
+                            onDeviceConnectListener.onDeviceConnected();
                     } else if (isConnecting) {
                         if (msg.arg1 != STATE_CONNECTED) {
-                            if (onBluetoothConnectionListener != null)
-                                onBluetoothConnectionListener.onDeviceConnectionFailed();
+                            if (onDeviceConnectListener != null)
+                                onDeviceConnectListener.onDeviceConnectFailed();
                         }
                         isConnecting = false;
+                        isConnected = false;
                     }
+
+
                     break;
             }
         }
@@ -457,10 +475,15 @@ public class EasyBluetooth {
                 Log.d(TAG, "discover a device");
                 BluetoothDevice device = intent
                         .getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                if (EasyBluetoothUtils.isTargetDevice(device)) {
+                if (EasyBluetoothConfig.FILTER_DEVICES && EasyBluetoothUtils.isTargetDevice(device)) {
                     if (BOND_BONDED != device.getBondState()) {
-                        Log.d(TAG,
-                                "discover a device that is not bonded");
+                        Log.d(TAG, "discover a device that is not bonded");
+                        if (onDeviceDiscoveryListener != null)
+                            onDeviceDiscoveryListener.onDiscoveryOne(device);
+                    }
+                } else if (!EasyBluetoothConfig.FILTER_DEVICES) {
+                    if (BOND_BONDED != device.getBondState()) {
+                        Log.d(TAG, "discover a device that is not bonded");
                         if (onDeviceDiscoveryListener != null)
                             onDeviceDiscoveryListener.onDiscoveryOne(device);
                     }
@@ -514,12 +537,12 @@ public class EasyBluetooth {
         this.onDeviceDiscoveryListener = listener;
     }
 
-    public void setOnBluetoothConnectionListener(OnBluetoothConnectionListener listener) {
-        this.onBluetoothConnectionListener = listener;
+    public void setOnDeviceConnectListener(OnDeviceConnectListener listener) {
+        this.onDeviceConnectListener = listener;
     }
 
-    public void setOnAutoConnectionListener(OnAutoConnectionListener listener) {
-        this.onAutoConnectionListener = listener;
+    public void setOnAutoConnectListener(OnAutoConnectListener listener) {
+        this.onAutoConnectListener = listener;
     }
 
     public void setOnDataReceivedListener(OnDataReceivedListener listener) {
@@ -530,20 +553,20 @@ public class EasyBluetooth {
         public void onDataReceived(byte[] data, String message);
     }
 
-    public interface OnBluetoothConnectionListener {
+    public interface OnDeviceConnectListener {
 
-        public void onDeviceConnected(String name, String address);
+        public void onDeviceConnected();
 
         public void onDeviceDisconnected();
 
-        public void onDeviceConnectionFailed();
+        public void onDeviceConnectFailed();
     }
 
-    public interface OnAutoConnectionListener {
+    public interface OnAutoConnectListener {
 
-        public void onAutoConnectionStarted();
+        public void onAutoConnectStart();
 
-        public void onNewConnection(String name, String address);
+        public void onNewConnected(String name, String address);
     }
 
     /**

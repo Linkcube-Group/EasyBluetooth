@@ -4,7 +4,6 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
-import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -46,10 +45,12 @@ public class EasyBluetoothService {
     private ConnectedThread mConnectedThread;
     private int mState;
 
+    private BluetoothDevice connectedDevice;
+
     // Constructor. Prepares a new BluetoothChat session
     // context : The UI Activity Context
     // handler : A Handler to send messages back to the UI Activity
-    public EasyBluetoothService(Context context, Handler handler) {
+    public EasyBluetoothService(Handler handler) {
         mAdapter = BluetoothAdapter.getDefaultAdapter();
         mState = STATE_NONE;
         mHandler = handler;
@@ -69,6 +70,10 @@ public class EasyBluetoothService {
     // Return the current connection state. 
     public synchronized int getState() {
         return mState;
+    }
+
+    public synchronized BluetoothDevice getConnectedDevice() {
+        return connectedDevice;
     }
 
     // Start the chat service. Specifically start AcceptThread to begin a
@@ -115,6 +120,8 @@ public class EasyBluetoothService {
         // Start the thread to connect with the given device
         mConnectThread = new ConnectThread(device);
         mConnectThread.start();
+
+        connectedDevice = null;
         setState(STATE_CONNECTING);
     }
 
@@ -156,6 +163,7 @@ public class EasyBluetoothService {
         msg.setData(bundle);
         mHandler.sendMessage(msg);
 
+        connectedDevice = device;
         setState(STATE_CONNECTED);
     }
 
@@ -176,6 +184,8 @@ public class EasyBluetoothService {
             mSecureAcceptThread.kill();
             mSecureAcceptThread = null;
         }
+
+        connectedDevice = null;
         setState(STATE_NONE);
     }
 

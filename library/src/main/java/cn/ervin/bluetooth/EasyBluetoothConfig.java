@@ -7,6 +7,6 @@ public class EasyBluetoothConfig {
 
     public static boolean FILTER_DEVICES = true;
 
-    public static boolean IS_ANDROID = true;
+    public static boolean IS_ANDROID = false;
 
 }

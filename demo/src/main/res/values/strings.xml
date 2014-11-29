@@ -1,9 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">BTHelper</string>
+    <string name="app_name">EasyBluetoothDemo</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+
+    <!-- Toast-蓝牙设置 -->
+    <string name="dialog_bonding_bluetooth">正在绑定玩具...</string>
+    <string name="toast_toy_unbonded">绑定拉玩具失败</string>
+    <string name="toast_open_bluetooth_wait">正在打开蓝牙,请稍后</string>
+    <string name="toast_close_bluetooth_wait">正在关闭蓝牙，请稍后</string>
+    <string name="toast_pls_open_bluetooth">请打开蓝牙</string>
+    <string name="toast_bluetooth_open">蓝牙已打开</string>
+    <string name="toast_bluetooth_closed">蓝牙已关闭</string>
+    <string name="toast_searching_toy_over">搜索蓝牙设备完毕!</string>
+    <string name="toast_no_device_nearby">附近没有搜索到设备</string>
+    <string name="toast_disconnect_toy">玩具中断</string>
+    <string name="toast_connecting_toy">正在与玩具连接...</string>
+    <string name="toast_connect_toy_success">连接玩具成功!</string>
+    <string name="toast_connect_toy_failure">连接玩具失败，请确认玩具是否打开!</string>
+    <string name="toast_bond_toy_success">玩具配对成功!</string>
+    <string name="toast_toy_disconnect_pls_set">玩具未连接，请点击右上角设置</string>
+
+    <!-- 蓝牙设置 -->
+    <string name="search_toy">搜索玩具</string>
+    <string name="searching">正在搜索...</string>
+    <string name="enter_mall">点击进入连酷玩具商城</string>
+    <string name="bluetooth">蓝牙</string>
+    <string name="bluetooth_help">蓝牙帮助</string>
+    <string name="devices_available">可连接玩具</string>
+    <string name="click_and_connect">点击列表即可连接</string>
+    <string name="switch_on_bluetooth_to_search_toy">要搜索连酷玩具，请打开蓝牙功能</string>
+    <string name="switching_on_bluetooth">正在打开蓝牙</string>
+    <string name="switching_off_bluetooth">正在关闭蓝牙</string>
+    <string name="connected">已连接</string>
+    <string name="bonded">已配对未连接</string>
+    <string name="bonding">正在配对</string>
+    <string name="unbond">未配对</string>
 
 </resources>
