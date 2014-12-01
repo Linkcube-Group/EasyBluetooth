@@ -234,6 +234,7 @@ public class EasyBluetoothService {
                 else
                     tmp = mAdapter.listenUsingRfcommWithServiceRecord(NAME_SECURE, UUID_OTHER_DEVICE);
             } catch (IOException e) {
+                e.printStackTrace();
             }
             mmServerSocket = tmp;
         }
@@ -247,8 +248,10 @@ public class EasyBluetoothService {
                 try {
                     // This is a blocking call and will only return on a
                     // successful connection or an exception
-                    socket = mmServerSocket.accept();
+                    if (mmServerSocket != null)
+                        socket = mmServerSocket.accept();
                 } catch (IOException e) {
+                    e.printStackTrace();
                     break;
                 }
 

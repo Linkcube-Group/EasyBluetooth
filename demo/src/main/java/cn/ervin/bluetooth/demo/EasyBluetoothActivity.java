@@ -145,6 +145,7 @@ public class EasyBluetoothActivity extends ActionBarActivity implements EasyBlue
 
     @Override
     public void onDeviceConnected() {
+        dismissProgressDialog();
         Toast.makeText(this, R.string.toast_connect_toy_success, Toast.LENGTH_SHORT).show();
         deviceAdapter.notifyDataSetChanged();
     }
